@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">FirstApp</string>
+    <string name="home_button">Clicked %d</string>
+    <string name="hextree_domain">https://hextree.io/</string>
+</resources>

@@ -16,6 +16,13 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+
 public class MainActivity extends AppCompatActivity {
 
     int counter = 0;
@@ -36,15 +43,26 @@ public class MainActivity extends AppCompatActivity {
         homeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                homeButton.setText("You clicked!");
-                Log.i("LEARNING", "You clicked the button");
-                counter++;
-                homeText.setText(getString(R.string.home_button, counter));
-
-                if(counter==10) {
-                    Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.hextree_domain)));
-                    startActivity(browserIntent);
-                }
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            URL url = new URL("http://www.android.com/");
+                            HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+                            InputStream in = new BufferedInputStream(urlConnection.getInputStream());
+                            BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+                            StringBuilder sb = new StringBuilder();
+                            String line;
+                            while ((line = reader.readLine()) != null) {
+                                sb.append(line).append('\n');
+                            }
+                            String result = sb.toString();
+                            runOnUiThread(() -> homeText.setText(result));
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }).start();
             }
         });
     }

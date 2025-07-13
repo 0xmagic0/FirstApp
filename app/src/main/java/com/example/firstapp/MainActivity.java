@@ -20,7 +20,9 @@ import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.Socket;
 import java.net.URL;
 
 public class MainActivity extends AppCompatActivity {
@@ -50,6 +52,38 @@ public class MainActivity extends AppCompatActivity {
                             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
                             InputStream in = new BufferedInputStream(urlConnection.getInputStream());
                             BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+                            StringBuilder sb = new StringBuilder();
+                            String line;
+                            while ((line = reader.readLine()) != null) {
+                                sb.append(line).append('\n');
+                            }
+                            String result = sb.toString();
+                            runOnUiThread(() -> homeText.setText(result));
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }).start();
+            }
+        });
+
+        Button tcpButton = findViewById(R.id.tcp_button);
+        tcpButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            Socket socket = new Socket("www.android.com", 80);
+                            socket.setSoTimeout(3000); // 3 second timeout
+                            runOnUiThread(() -> homeText.setText("Connected...")); // Debug line
+                            OutputStream outputStream = socket.getOutputStream();
+                            BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                            // Raw HTTP Request
+                            String request = "GET / HTTP/1.1\r\nHost: www.android.com\r\nConnection: close\r\nUser-Agent: app\r\nAccept: */*\r\n\r\n";
+                            outputStream.write(request.getBytes());
+                            outputStream.flush();
                             StringBuilder sb = new StringBuilder();
                             String line;
                             while ((line = reader.readLine()) != null) {
